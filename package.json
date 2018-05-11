@@ -1,0 +1,11 @@
+{
+  "name": "autopublisher",
+  "version": "1.0.0",
+  "description": "Auto Publisher",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "aboo",
+  "license": "ISC"
+}

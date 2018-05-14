@@ -1,15 +1,11 @@
 var crypto = require('crypto');
 var fs = require('fs');
 
-var hash = null;
+// read source config
+var iosConfigJSON = JSON.parse(fs.readFileSync('./source/STAConfig-ios.txt'));
+var androidConfigJSON = JSON.parse(fs.readFileSync('./source/STAConfig-android.txt'));
 
-var iosConf = fs.readFileSync('./source/STAConfig-ios.txt');
-var iosConfigJSON = JSON.parse(iosConf.toString());
-var androidConf = fs.readFileSync('./source/STAConfig-android.txt');
-var androidConfigJSON = JSON.parse(androidConf.toString());
-
-
-// 清空target
+// make 'target' if not exists
 fs.exists('./target',function (exists) {
     if(exists) {
         deleteFolder('./target',function () {
@@ -18,73 +14,65 @@ fs.exists('./target',function (exists) {
     }else{
         fs.mkdirSync('./target',function (err) { if(err) throw err; });
     }
-
 });
 
-
+// hash .zip packages
+var hash = null;
 fs.exists('./source/www.zip', function (exists) {
     if(exists){
         hash = crypto.createHash('sha512');
         hash.update(fs.readFileSync('./source/www.zip'));
         var www_hashcode = hash.digest('hex').toUpperCase();
-        //set conf
+        //set config
         iosConfigJSON.webresources[1].hashcode = www_hashcode;
         androidConfigJSON.webresources[1].hashcode = www_hashcode;
-        //复制到target
+        //copy file to target
         copyfile('./source/www.zip','./target/www.zip');
     }
-    addConfigFile();
+    makeTargetConfig();
 });
 fs.exists('./source/www-ios.zip', function (exists) {
     if(exists){
         hash = crypto.createHash('sha512');
         hash.update(fs.readFileSync('./source/www-ios.zip'));
         var ios_hashcode = hash.digest('hex').toUpperCase();
-        //set conf
+        //set config
         iosConfigJSON.webresources[0].hashcode = ios_hashcode;
-        //复制到target
+        //copy file to target
         copyfile('./source/www-ios.zip','./target/www-ios.zip');
     }
-    addConfigFile();
+    makeTargetConfig();
 });
 fs.exists('./source/www-android.zip', function (exists) {
     if(exists){
         hash = crypto.createHash('sha512');
         hash.update(fs.readFileSync('./source/www-android.zip'));
         var android_hashcode = hash.digest('hex').toUpperCase();
-        //set conf
+        //set config
         androidConfigJSON.webresources[0].hashcode = android_hashcode;
-        //复制到target
+        //copy file to target
         copyfile('./source/www-android.zip','./target/www-android.zip');
     }
-    addConfigFile();
+    makeTargetConfig();
 });
 
-
-function addConfigFile() {
-
-    fs.writeFileSync('./target/STAConfig-ios.txt',JSON.stringify(iosConfigJSON),function (err) {
-        if(err) { throw err; }
-        console.log("The file was saved! ***** ios *****");
-    });
-
-    fs.writeFileSync('./target/STAConfig-android.txt',JSON.stringify(androidConfigJSON),function (err) {
-        if(err) { throw err; }
-        console.log("The file was saved! ***** android *****");
-    });
+// add config files to 'target'
+function makeTargetConfig() {
+    fs.writeFileSync('./target/STAConfig-ios.txt',JSON.stringify(iosConfigJSON),function (err) { if(err) throw err; });
+    fs.writeFileSync('./target/STAConfig-android.txt',JSON.stringify(androidConfigJSON),function (err) { if(err) throw err; });
 }
 
+// delete folder recursively
 function deleteFolder(path,callback) {
     var files = fs.readdirSync(path);
     files.forEach(function(file, index) {
         var curPath = path + "/" + file;
         fs.unlinkSync(curPath);
-        console.log(curPath);
     });
-    console.log('delete done')
     callback;
 };
 
+// copy .zip packages to 'target'
 function copyfile(src,dir) {
     fs.writeFileSync(dir,fs.readFileSync(src));
 }

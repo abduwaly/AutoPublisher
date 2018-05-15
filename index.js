@@ -75,4 +75,5 @@ function deleteFolder(path,callback) {
 // copy .zip packages to 'target'
 function copyfile(src,dir) {
     fs.writeFileSync(dir,fs.readFileSync(src));
+    console.log("******* Hash Successfully ******** : " + src);
 }
